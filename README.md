@@ -8,4 +8,4 @@ It differs in that it correctly handles json numbers as strings and it includes 
 
 Current unsupported features (that I don't yet need) are imports, nested messages, and maps. 
 
-Status: work in progress
+Status: works for my purposes but feel free to open issues or contribute.
