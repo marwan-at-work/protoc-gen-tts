@@ -191,11 +191,11 @@ func (mf *messageField) populateZeroValue() string {
 	case "string":
 		return "''"
 	}
-	if mf.IsEnum {
-		return "''"
-	}
 	if mf.IsRepeated {
 		return "[]"
+	}
+	if mf.IsEnum {
+		return "''"
 	}
 	return "{}"
 }
