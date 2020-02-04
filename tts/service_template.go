@@ -46,7 +46,7 @@ export class {{ .Name }}Client implements {{ .Name }} {
       if (!res.ok) {
         return throwTwirpError(res)
       }
-      return res.json().then((m) => { return {{ .Output }}.fromJSON(m)})
+      return res.json().then((props) => { return {{ .Output }}.fromJSON(props)})
     })
   }
   {{ end }} 
@@ -82,12 +82,12 @@ export class {{ .Name }} implements {{ .Name }}Properties {
 	constructor(props?: {{ .Name }}Properties) {
 		if (props) {
 			{{- range .Fields }}
-			this.{{ .Name }} = props.{{ .Name }}
+			this.{{ .Name }} = props.{{ .Name }}!
 			{{- end -}}
 		}
 	}
 
-	static fromJSON(m: {{ .Name }}Properties = {}): {{ .Name }} {
+	static fromJSON(props: {{ .Name }}JSON = {}): {{ .Name }} {
 		return new {{ .Name }}({
 			{{- range .Fields }}
 			{{ .Name }}: {{ .ResolveType }},

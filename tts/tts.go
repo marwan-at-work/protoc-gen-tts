@@ -244,54 +244,24 @@ func (mf messageField) ResolveType() string {
 	if mf.IsRepeated {
 		switch t {
 		case "string", "number", "boolean":
-			return fmt.Sprintf("(m['%s']! || []).map((v) => { return %s(v)})", mf.JSONName, strings.Title(t))
+			return fmt.Sprintf("(props['%s']! || []).map((v) => { return %s(v)})", mf.JSONName, strings.Title(t))
 		}
 		if mf.IsEnum {
-			return fmt.Sprintf("(m['%s']! || []).map((v) => { return (%s)[v] })", mf.JSONName, t)
+			return fmt.Sprintf("(props['%s']! || []).map((v) => { return (%s)[v] })", mf.JSONName, t)
 		}
-		return fmt.Sprintf("(m['%s']! || []).map((v) => { return %s.fromJSON(v) })", mf.JSONName, t)
+		return fmt.Sprintf("(props['%s']! || []).map((v) => { return %s.fromJSON(v) })", mf.JSONName, t)
 	}
 
 	switch t {
 	case "string", "number", "boolean":
-		return fmt.Sprintf("%s(m['%s'] || %s)!", strings.Title(t), mf.JSONName, mf.ZeroValue)
+		return fmt.Sprintf("%s(props['%s'] || %s)!", strings.Title(t), mf.JSONName, mf.ZeroValue)
 	}
 
 	if mf.IsEnum {
-		return fmt.Sprintf("(%s)[m['%s']!]!", t, mf.JSONName)
+		return fmt.Sprintf("(%s)[props['%s']! || '']!", t, mf.JSONName)
 	}
 
-	return fmt.Sprintf("%s.fromJSON(m['%s']!)", t, mf.JSONName)
-}
-
-func (mf messageField) ToJSONField() string {
-	t := mf.Type
-
-	// if t == "Date" {
-	// 	t = "string"
-	// }
-
-	if mf.IsRepeated {
-		switch t {
-		case "string", "number", "boolean":
-			return mf.Name
-		}
-		if mf.IsEnum {
-			return fmt.Sprintf("(m['%s']! || []).map((v) => { return (%s)[v] })", mf.JSONName, t)
-		}
-		return fmt.Sprintf("(m['%s']! || []).map((v) => { return %s.fromJSON(v) })", mf.JSONName, t)
-	}
-
-	switch t {
-	case "string", "number", "boolean":
-		return fmt.Sprintf("%s(m['%s'])!", strings.Title(t), mf.JSONName)
-	}
-
-	if mf.IsEnum {
-		return fmt.Sprintf("(<any>%s)[m['%s']!]!", t, mf.JSONName)
-	}
-
-	return fmt.Sprintf("%s.fromJSON(m['%s']!)", t, mf.JSONName)
+	return fmt.Sprintf("%s.fromJSON(props['%s']!)", t, mf.JSONName)
 }
 
 func (mf messageField) PrintType() string {
