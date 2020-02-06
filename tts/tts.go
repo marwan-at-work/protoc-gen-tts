@@ -125,6 +125,7 @@ func (t *tts) visitMessage(from pgs.Package, m pgs.Message) {
 		Name: m.Name().String(),
 		Doc:  getDoc(m.SourceCodeInfo().LeadingComments(), 0),
 	}
+	t.pkgs[m.Package()].Messages = append(t.pkgs[m.Package()].Messages, msg)
 	for _, f := range m.Fields() {
 		mf := createField(f)
 		switch {
@@ -135,7 +136,6 @@ func (t *tts) visitMessage(from pgs.Package, m pgs.Message) {
 		}
 		msg.Fields = append(msg.Fields, mf)
 	}
-	t.pkgs[m.Package()].Messages = append(t.pkgs[m.Package()].Messages, msg)
 }
 
 func (t *tts) visitEnum(from pgs.Package, e pgs.Enum) {
@@ -144,6 +144,9 @@ func (t *tts) visitEnum(from pgs.Package, e pgs.Enum) {
 		t.addDeclarationForImport(imp, e.Name().String())
 		t.addPackage(e.Package())
 		t.visitEnum(e.Package(), e)
+	}
+	if t.enumVisited(e) {
+		return
 	}
 	var ed enumData
 	ed.Name = e.Name().String()
@@ -170,6 +173,15 @@ func pgsEnumFromField(f pgs.Field) pgs.Enum {
 func (t *tts) messageVisited(m pgs.Message) bool {
 	for _, visited := range t.pkgs[m.Package()].Messages {
 		if visited.Name == m.Name().String() {
+			return true
+		}
+	}
+	return false
+}
+
+func (t *tts) enumVisited(e pgs.Enum) bool {
+	for _, visited := range t.pkgs[e.Package()].Enums {
+		if visited.Name == e.Name().String() {
 			return true
 		}
 	}
