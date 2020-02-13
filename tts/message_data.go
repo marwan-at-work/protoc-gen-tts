@@ -81,10 +81,6 @@ func (mf *messageField) populateZeroValue() string {
 func (mf messageField) ResolveType() string {
 	t := mf.Type
 
-	// if t == "Date" {
-	// 	t = "string"
-	// }
-
 	if mf.IsRepeated {
 		switch t {
 		case "string", "number", "boolean":
@@ -114,4 +110,37 @@ func (mf messageField) PrintType() string {
 		resp += "[]"
 	}
 	return resp
+}
+
+func (mf messageField) PrintTypeProperties() string {
+	resp := mf.Type
+	if mf.isClass() {
+		resp += "Properties"
+	}
+	if mf.IsRepeated {
+		resp += "[]"
+	}
+	return resp
+}
+
+func (mf messageField) SetConstructorProp() string {
+	if mf.isBasic() || mf.IsEnum {
+		return fmt.Sprintf("props.%s!", mf.Name)
+	}
+	if mf.IsRepeated {
+		return fmt.Sprintf("(props.%s! || []).map((v) => { return new %s(v!) })", mf.Name, mf.Type)
+	}
+	return fmt.Sprintf("new %s(props.%s!)", mf.Type, mf.Name)
+}
+
+func (mf messageField) isBasic() bool {
+	switch mf.Type {
+	case "string", "number", "boolean":
+		return true
+	}
+	return false
+}
+
+func (mf messageField) isClass() bool {
+	return !mf.isBasic() && !mf.IsEnum
 }

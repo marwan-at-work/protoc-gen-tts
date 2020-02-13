@@ -84,7 +84,7 @@ export enum {{ .Name }} {
 {{ .Doc }}
 export interface {{ .Name }}Properties {
 	{{- range .Fields }}
-	{{ .Name }}?: {{ .PrintType }}
+	{{ .Name }}?: {{ .PrintTypeProperties }}
 	{{- end }}
 	toJSON?(): object
 }
@@ -103,7 +103,7 @@ export class {{ .Name }} implements {{ .Name }}Properties {
 	constructor(props?: {{ .Name }}Properties) {
 		if (props) {
 			{{- range .Fields }}
-			this.{{ .Name }} = props.{{ .Name }}!
+			this.{{ .Name }} = {{ .SetConstructorProp }}
 			{{- end -}}
 		}
 	}
