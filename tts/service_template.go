@@ -122,7 +122,15 @@ export class {{ .Name }} implements {{ .Name }}Properties {
       '{{ .JSONName }}': this.{{ .Name }},
       {{- end -}}
     }
-	}
+  }
+  
+  public toObject(): {{ .Name }}Properties {
+    return {
+      {{- range .Fields }}
+      {{ .Name }}: {{ .SetToObjectProp }},
+      {{- end }}
+    }
+  }
 }
 {{ end }}
 `

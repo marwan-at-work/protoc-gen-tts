@@ -133,6 +133,16 @@ func (mf messageField) SetConstructorProp() string {
 	return fmt.Sprintf("new %s(props.%s!)", mf.Type, mf.Name)
 }
 
+func (mf messageField) SetToObjectProp() string {
+	if mf.isBasic() || mf.IsEnum {
+		return fmt.Sprintf("this.%s", mf.Name)
+	}
+	if mf.IsRepeated {
+		return fmt.Sprintf("(this.%s || []).map((v) => { return v.toObject() })", mf.Name)
+	}
+	return fmt.Sprintf("this.%s.toObject()", mf.Name)
+}
+
 func (mf messageField) isBasic() bool {
 	switch mf.Type {
 	case "string", "number", "boolean":

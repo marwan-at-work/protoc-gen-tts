@@ -42,19 +42,11 @@ func (cpp formatter) Process(in []byte) ([]byte, error) {
 		"120",
 	)
 	cmd.Stdin = bytes.NewReader(in)
+	cmd.Stderr = os.Stderr
 	out, err := cmd.Output()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return in, nil
 	}
 	return out, nil
-}
-
-func validGoBinary(name string) error {
-	err := exec.Command(name).Run()
-	_, ok := err.(*exec.ExitError)
-	if err != nil && !ok {
-		return err
-	}
-	return nil
 }
