@@ -108,13 +108,16 @@ export class {{ .Name }} implements {{ .Name }}Properties {
 		}
 	}
 
-	static fromJSON(props: {{ .Name }}JSON = {}): {{ .Name }} {
-		return new {{ .Name }}({
-			{{- range .Fields }}
-			{{ .Name }}: {{ .ResolveType }},
-			{{- end -}}
-		})
-	}
+  static fromJSON(props: {{ .Name }}JSON): {{ .Name }} {
+    if (!props) {
+      props = {};
+    }
+    return new {{ .Name }}({
+      {{- range .Fields }}
+      {{ .Name }}: {{ .ResolveType }},
+      {{- end -}}
+    })
+  }
 
 	public toJSON(): {{ .Name }}JSON {
     return {
