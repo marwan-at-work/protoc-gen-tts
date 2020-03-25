@@ -97,13 +97,14 @@ interface {{ .Name }}JSON {
 
 {{ .Doc }}
 export class {{ .Name }} implements {{ .Name }}Properties {
+  {{ $msg := . }}
   {{ range .Fields -}}
-  {{ .Name }}: {{ .PrintType }}
+  {{ .Name }}{{ if $msg.Optional }}?{{ end }}: {{ .PrintType }}
   {{ end }}
 	constructor(props?: {{ .Name }}Properties) {
 		if (props) {
 			{{- range .Fields }}
-			this.{{ .Name }} = {{ .SetConstructorProp }}
+			this.{{ .Name }} = {{ .SetConstructorProp $msg.Optional }}
 			{{- end -}}
 		}
 	}
@@ -130,7 +131,7 @@ export class {{ .Name }} implements {{ .Name }}Properties {
   public toObject(): {{ .Name }}Properties {
     return {
       {{- range .Fields }}
-      {{ .Name }}: {{ .SetToObjectProp }},
+      {{ .Name }}: {{ .SetToObjectProp $msg.Optional }},
       {{- end }}
     }
   }

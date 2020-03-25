@@ -8,9 +8,10 @@ import (
 )
 
 type messageData struct {
-	Name   string
-	Doc    string
-	Fields []*messageField
+	Name     string
+	Doc      string
+	Fields   []*messageField
+	Optional bool
 }
 
 type messageField struct {
@@ -123,22 +124,28 @@ func (mf messageField) PrintTypeProperties() string {
 	return resp
 }
 
-func (mf messageField) SetConstructorProp() string {
+func (mf messageField) SetConstructorProp(optional bool) string {
 	if mf.isBasic() || mf.IsEnum {
 		return fmt.Sprintf("props.%s!", mf.Name)
 	}
 	if mf.IsRepeated {
 		return fmt.Sprintf("(props.%s! || []).map((v) => { return new %s(v!) })", mf.Name, mf.Type)
 	}
+	if optional {
+		return fmt.Sprintf("props.%s && new %s(props.%s!)", mf.Name, mf.Type, mf.Name)
+	}
 	return fmt.Sprintf("new %s(props.%s!)", mf.Type, mf.Name)
 }
 
-func (mf messageField) SetToObjectProp() string {
+func (mf messageField) SetToObjectProp(optional bool) string {
 	if mf.isBasic() || mf.IsEnum {
 		return fmt.Sprintf("this.%s", mf.Name)
 	}
 	if mf.IsRepeated {
 		return fmt.Sprintf("(this.%s || []).map((v) => { return v.toObject() })", mf.Name)
+	}
+	if optional {
+		return fmt.Sprintf("this.%s?.toObject()", mf.Name)
 	}
 	return fmt.Sprintf("this.%s.toObject()", mf.Name)
 }

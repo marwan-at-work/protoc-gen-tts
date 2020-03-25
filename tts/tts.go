@@ -102,8 +102,8 @@ func (t *tts) createService(s pgs.Service) *serviceData {
 		sd.Name,
 	)
 	for _, m := range s.Methods() {
-		t.visitMessage(m.Package(), m.Input())
-		t.visitMessage(m.Package(), m.Output())
+		t.visitMessage(m.Package(), m.Input(), true)
+		t.visitMessage(m.Package(), m.Output(), false)
 
 		md := createMethod(m)
 		sd.Methods = append(sd.Methods, md)
@@ -111,19 +111,20 @@ func (t *tts) createService(s pgs.Service) *serviceData {
 	return &sd
 }
 
-func (t *tts) visitMessage(from pgs.Package, m pgs.Message) {
+func (t *tts) visitMessage(from pgs.Package, m pgs.Message, optional bool) {
 	if from != m.Package() {
 		imp := t.createImportForPackage(from, m.Package())
 		t.addDeclarationForImport(imp, m.Name().String())
 		t.addPackage(m.Package())
-		t.visitMessage(m.Package(), m)
+		t.visitMessage(m.Package(), m, optional)
 	}
 	if t.messageVisited(m) {
 		return
 	}
 	msg := &messageData{
-		Name: m.Name().String(),
-		Doc:  getDoc(m.SourceCodeInfo().LeadingComments(), 0),
+		Name:     m.Name().String(),
+		Doc:      getDoc(m.SourceCodeInfo().LeadingComments(), 0),
+		Optional: optional,
 	}
 	t.pkgs[m.Package()].Messages = append(t.pkgs[m.Package()].Messages, msg)
 	for _, f := range m.Fields() {
@@ -132,7 +133,7 @@ func (t *tts) visitMessage(from pgs.Package, m pgs.Message) {
 		case mf.IsEnum:
 			t.visitEnum(m.Package(), pgsEnumFromField(f))
 		case mf.IsMessage:
-			t.visitMessage(m.Package(), pgsMsgFromField(f))
+			t.visitMessage(m.Package(), pgsMsgFromField(f), optional)
 		}
 		msg.Fields = append(msg.Fields, mf)
 	}
