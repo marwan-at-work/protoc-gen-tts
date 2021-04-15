@@ -1,11 +1,19 @@
-### protoc-gen-tts
+# protoc-gen-tts
 
-A Protobuf plugin that generates a Typescript client for Twirp services
+A Protobuf plugin that generates a Typescript client for Twirp services.
 
-This repository is based on https://github.com/horizon-games/protoc-gen-twirp_ts and https://github.com/larrymyers/protoc-gen-twirp_typescript (MIT)
+This protoc plugin is intended to work with the official JS protobuf plugin and
+our related <https://github.com/InVisionApp/twirpjs>. It will generate js
+service clients by wrapping `twirpjs` and referencing the generated protobuf
+code from the official JS plugin when referencing messages. It also generates
+type annotations for the generated JS code.
 
-It differs in that it correctly handles json numbers as strings and it includes documentation from protobuf comments into the generated TS file.
+## Known Limitations
 
-Current unsupported features (that I don't yet need) are nested messages, and maps. 
+- Method inputs and outputs must be defined as messages in the protobuf package
+  being rendered. For example,
+  `rpc Do(google.protobuf.Empty) returns (google.protobuf.Empty)` is not yet
+  handled. The inputs and outputs can still make use of imported types but the
+  in/out types, themselves, must be framed in the local package like
+  `rpc Do(DoRequest) returns (DoResponse)`.
 
-Status: works for my purposes but feel free to open issues or contribute.

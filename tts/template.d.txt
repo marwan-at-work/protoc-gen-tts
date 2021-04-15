@@ -1,0 +1,16 @@
+// GENERATED CODE -- DO NOT EDIT!
+
+import * as twirp from 'twirpjs';
+import * as pb from './{{index .Name.Split 0}}_pb';
+
+{{range .Services}}
+export class {{.Name.UpperCamelCase.String}}TwirpClient {
+  constructor (transport: twirp.Transport);
+{{$service := .}}
+{{range .Methods}}
+  {{.Name.LowerSnakeCase.String}}(
+    request: pb.{{.Input.Name.UpperCamelCase.String}},
+  ): Promise<!pb.{{.Output.Name.UpperCamelCase.String}}>;
+{{end}}
+}
+{{end}}

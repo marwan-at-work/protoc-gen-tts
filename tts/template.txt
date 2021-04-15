@@ -1,0 +1,47 @@
+/**
+ * @fileoverview Twirp generated client stub for {{.Package.ProtoName.String}}
+ * @enhanceable
+ * @public
+ */
+
+// GENERATED CODE -- DO NOT EDIT!
+
+
+/* eslint-disable */
+const twirp = require('twirpjs');
+const pb = require('./{{index .Name.Split 0}}_pb.js');
+var scope = {};
+
+{{range .Services}}
+/**
+ * @param {!twirp.Transport} transport
+ * @constructor
+ * @struct
+ * @final
+ */
+scope.{{.Name.UpperCamelCase.String}}TwirpClient =
+    function (transport) {
+
+        /**
+        * @private @const {!twirp.Transport} The client
+        */
+        this.transport_ = transport;
+    };
+{{$service := .}}
+{{range .Methods}}
+/**
+* @param {!pb.{{.Input.Name.UpperCamelCase.String}}} request The
+*     request proto
+* @return {!Promise<!pb.{{.Output.Name.UpperCamelCase.String}}>}
+*     Promise that resolves to the response
+*/
+scope.{{$service.Name.UpperCamelCase.String}}TwirpClient.prototype.{{.Name.LowerSnakeCase.String}} =
+    function (request) {
+        return this.transport_.call('{{$service.Package.ProtoName.String}}.{{$service.Name.UpperCamelCase.String}}', '{{.Name.UpperCamelCase.String}}', request, pb.{{.Output.Name.UpperCamelCase.String}})
+    };
+
+{{end}}
+
+module.exports = scope;
+
+{{end}}
