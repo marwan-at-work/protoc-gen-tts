@@ -29,7 +29,6 @@ func (cpp formatter) Match(a pgs.Artifact) bool {
 func (cpp formatter) Process(in []byte) ([]byte, error) {
 	cmd := exec.Command(
 		"prettier",
-		"--stdin",
 		"--parser",
 		"typescript",
 		"--trailing-comma",

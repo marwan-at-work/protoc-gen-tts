@@ -1,12 +1,18 @@
 package tts
 
 import (
-	"strings"
 	"text/template"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
+var title = cases.Title(language.English, cases.NoLower)
+
 var tmpl = template.Must(template.New("tts").Funcs(template.FuncMap{
-	"title": strings.Title,
+	"title": func(s string) string {
+		return title.String(s)
+	},
 }).Parse(serviceTemplate))
 
 const serviceTemplate = `/* tslint:disable */
@@ -101,12 +107,10 @@ export class {{ .Name }} implements {{ .Name }}Properties {
   {{ range .Fields -}}
   {{ .Name }}{{ if $msg.Optional }}?{{ end }}: {{ .PrintType }}
   {{ end }}
-	constructor(props?: {{ .Name }}Properties) {
-		if (props) {
-			{{- range .Fields }}
-			this.{{ .Name }} = {{ .SetConstructorProp $msg.Optional }}
-			{{- end -}}
-		}
+	constructor(props: {{ .Name }}Properties) {
+    {{- range .Fields }}
+    this.{{ .Name }} = {{ .SetConstructorProp $msg.Optional }}
+    {{- end -}}
 	}
 
   static fromJSON(props: {{ .Name }}JSON): {{ .Name }} {

@@ -2,7 +2,6 @@ package tts
 
 import (
 	"fmt"
-	"strings"
 
 	pgs "github.com/lyft/protoc-gen-star"
 )
@@ -85,7 +84,7 @@ func (mf messageField) ResolveType() string {
 	if mf.IsRepeated {
 		switch t {
 		case "string", "number", "boolean":
-			return fmt.Sprintf("(props['%s']! || []).map((v) => { return %s(v)})", mf.JSONName, strings.Title(t))
+			return fmt.Sprintf("(props['%s']! || []).map((v) => { return %s(v)})", mf.JSONName, title.String(t))
 		}
 		if mf.IsEnum {
 			return fmt.Sprintf("(props['%s']! || []).map((v) => { return (%s)[v] })", mf.JSONName, t)
@@ -95,7 +94,7 @@ func (mf messageField) ResolveType() string {
 
 	switch t {
 	case "string", "number", "boolean":
-		return fmt.Sprintf("%s(props['%s'] || %s)!", strings.Title(t), mf.JSONName, mf.ZeroValue)
+		return fmt.Sprintf("%s(props['%s'] || %s)!", title.String(t), mf.JSONName, mf.ZeroValue)
 	}
 
 	if mf.IsEnum {
