@@ -50,10 +50,12 @@ export class {{ .Name }}Client implements {{ .Name }} {
   private hostname: string
   private fetch: Fetch
   private path = '{{ .PathPrefix }}'
+  private opts: RequestInit
 
-  constructor(hostname: string, fetch: Fetch) {
+  constructor(hostname: string, fetch: Fetch, opts: RequestInit = {}) {
     this.hostname = hostname
     this.fetch = fetch
+    this.opts = opts
   }
 
   private url(name: string): string {
@@ -66,7 +68,7 @@ export class {{ .Name }}Client implements {{ .Name }} {
 	const body = new {{ .Input }}(request)
     return this.fetch(
       this.url('{{ .Name | title }}'),
-      createTwirpRequest(body, headers)
+      createTwirpRequest(body, headers, this.opts)
     ).then((res) => {
       if (!res.ok) {
         return throwTwirpError(res)

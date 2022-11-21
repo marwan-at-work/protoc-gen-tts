@@ -33,11 +33,12 @@ export const throwTwirpError = (resp: Response) => {
     });
 };
 
-export const createTwirpRequest = (body: object = {}, headers: object = {}): object => {
+export const createTwirpRequest = (body: object = {}, headers: object = {}, opts: RequestInit = {}): RequestInit => {
     return {
         method: 'POST',
         headers: { ...headers, 'Content-Type': 'application/json' },
         body: JSON.stringify(body || {}),
+        ...opts,
     };
 };
 
