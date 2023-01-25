@@ -10,17 +10,19 @@ type serviceData struct {
 }
 
 type methodData struct {
-	Name   string
-	Doc    string
-	Input  string
-	Output string
+	Name           string
+	Doc            string
+	Input          string
+	Output         string
+	InputHasFields bool
 }
 
 func createMethod(m pgs.Method) *methodData {
 	return &methodData{
-		Name:   m.Name().LowerCamelCase().String(),
-		Doc:    getDoc(m.SourceCodeInfo().LeadingComments(), 1),
-		Input:  m.Input().Name().String(),
-		Output: m.Output().Name().String(),
+		Name:           m.Name().LowerCamelCase().String(),
+		Doc:            getDoc(m.SourceCodeInfo().LeadingComments(), 1),
+		Input:          m.Input().Name().String(),
+		Output:         m.Output().Name().String(),
+		InputHasFields: len(m.Input().Fields()) > 0,
 	}
 }

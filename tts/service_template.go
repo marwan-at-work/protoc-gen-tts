@@ -65,7 +65,11 @@ export class {{ .Name }}Client implements {{ .Name }} {
   {{ range .Methods }}
   {{ .Doc }}
   public {{ .Name }}(request: {{ .Input }}Properties, headers: object = {}): Promise<{{ .Output }}> {
-	const body = new {{ .Input }}(request)
+  {{ if .InputHasFields }}
+	const body = new {{ .Input }}(request);
+  {{ else }}
+  const body = new {{ .Input }}();
+  {{ end -}}
     return this.fetch(
       this.url('{{ .Name | title }}'),
       createTwirpRequest(body, headers, this.opts)
@@ -109,12 +113,16 @@ export class {{ .Name }} implements {{ .Name }}Properties {
   {{ range .Fields -}}
   {{ .Name }}{{ if $msg.Optional }}?{{ end }}: {{ .PrintType }}
   {{ end }}
+
+  {{ if (gt (len .Fields) 0) }}
 	constructor(props: {{ .Name }}Properties) {
     {{- range .Fields }}
     this.{{ .Name }} = {{ .SetConstructorProp $msg.Optional }}
     {{- end -}}
 	}
+  {{ end }}
 
+  {{ if (gt (len .Fields) 0) }}
   static fromJSON(props: {{ .Name }}JSON): {{ .Name }} {
     if (!props) {
       props = {};
@@ -125,6 +133,11 @@ export class {{ .Name }} implements {{ .Name }}Properties {
       {{- end -}}
     })
   }
+  {{ else }}
+  static fromJSON(props: {{ .Name }}JSON): {{ .Name }} {
+    return new {{ .Name }}();
+  }
+  {{ end }}
 
 	public toJSON(): {{ .Name }}JSON {
     return {
