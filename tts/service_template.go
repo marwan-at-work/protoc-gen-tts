@@ -64,7 +64,7 @@ export class {{ .Name }}Client implements {{ .Name }} {
 
   {{ range .Methods }}
   {{ .Doc }}
-  public {{ .Name }}(request: {{ .Input }}Properties, headers: object = {}): Promise<{{ .Output }}> {
+  public {{ .Name }}({{ if .InputHasFields }}request{{ else }}_{{ end }}: {{ .Input }}Properties, headers: object = {}): Promise<{{ .Output }}> {
   {{ if .InputHasFields }}
 	const body = new {{ .Input }}(request);
   {{ else }}
@@ -134,7 +134,7 @@ export class {{ .Name }} implements {{ .Name }}Properties {
     })
   }
   {{ else }}
-  static fromJSON(props: {{ .Name }}JSON): {{ .Name }} {
+  static fromJSON(_: {{ .Name }}JSON): {{ .Name }} {
     return new {{ .Name }}();
   }
   {{ end }}

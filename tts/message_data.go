@@ -56,6 +56,8 @@ func protoTypeToTSType(typ pgs.FieldType) string {
 		return "number"
 	case pgs.StringT:
 		return "string"
+	case pgs.BytesT:
+		return "string"
 	}
 	panic("unknown type: " + typ.Element().ProtoType().String())
 }
