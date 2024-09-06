@@ -23,7 +23,7 @@ const serviceTemplate = `/* tslint:disable */
 {{ if .Services }}
 import {
   createTwirpRequest,
-  Fetch,
+  type Fetch,
   throwTwirpError
 } from './twirp'
 {{ end }}
@@ -31,7 +31,11 @@ import {
 {{ range .Imports }}
 import {
 {{ range .Declarations }}
-  {{ . }},
+  {{ if .IsType }}
+  type {{ .Name }},
+  {{ else }}
+  {{ .Name }},
+  {{ end }}
 {{ end }}
 } from './{{ .Name }}'
 {{ end }}
@@ -103,7 +107,7 @@ export interface {{ .Name }}Properties {
 
 interface {{ .Name }}JSON {
 	{{- range .Fields }}
-	{{ .JSONName }}?: {{ .PrintType }}
+	{{ .JSONName }}?: {{ .PrintTypeJSON }}
 	{{- end -}}
 }
 
@@ -142,7 +146,7 @@ export class {{ .Name }} implements {{ .Name }}Properties {
 	public toJSON(): {{ .Name }}JSON {
     return {
       {{- range .Fields }}
-      '{{ .JSONName }}': this.{{ .Name }},
+      '{{ .JSONName }}': {{ .SetToJSONProp $msg.Optional }},
       {{- end -}}
     }
   }

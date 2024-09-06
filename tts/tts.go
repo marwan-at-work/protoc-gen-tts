@@ -45,7 +45,7 @@ func (p *protoPackage) sortImports() {
 	})
 	for _, imp := range p.Imports {
 		sort.Slice(imp.Declarations, func(i, j int) bool {
-			return imp.Declarations[i] < imp.Declarations[j]
+			return imp.Declarations[i].Name < imp.Declarations[j].Name
 		})
 	}
 }
@@ -68,6 +68,9 @@ func (t *tts) Execute(targets map[string]pgs.File, pkgs map[string]pgs.Package) 
 		for _, s := range f.Services() {
 			svc := t.createService(s)
 			pkg.Services = append(pkg.Services, svc)
+		}
+		for _, msg := range f.Messages() {
+			t.visitMessage(f.Package(), msg, true)
 		}
 	}
 	t.AddGeneratorFile("twirp.ts", twirpFile)
@@ -111,10 +114,15 @@ func (t *tts) createService(s pgs.Service) *serviceData {
 	return &sd
 }
 
+func isTime(m pgs.Message) bool {
+	return m != nil && m.IsWellKnown() && m.Name() == pgs.TimestampWKT.Name()
+}
+
 func (t *tts) visitMessage(from pgs.Package, m pgs.Message, optional bool) {
-	if from != m.Package() {
+	if from != m.Package() && !isTime(m) {
 		imp := t.createImportForPackage(from, m.Package())
 		t.addDeclarationForImport(imp, m.Name().String())
+		t.addTypeDeclarationForImport(imp, m.Name().String()+"Properties")
 		t.addPackage(m.Package())
 		t.visitMessage(m.Package(), m, optional)
 	}
@@ -132,7 +140,7 @@ func (t *tts) visitMessage(from pgs.Package, m pgs.Message, optional bool) {
 		switch {
 		case mf.IsEnum:
 			t.visitEnum(m.Package(), pgsEnumFromField(f))
-		case mf.IsMessage:
+		case mf.IsMessage && !isTime(m):
 			t.visitMessage(m.Package(), pgsMsgFromField(f), optional)
 		}
 		msg.Fields = append(msg.Fields, mf)
@@ -172,6 +180,9 @@ func pgsEnumFromField(f pgs.Field) pgs.Enum {
 }
 
 func (t *tts) messageVisited(m pgs.Message) bool {
+	if isTime(m) {
+		return true
+	}
 	for _, visited := range t.pkgs[m.Package()].Messages {
 		if visited.Name == m.Name().String() {
 			return true
@@ -210,9 +221,18 @@ func (t *tts) hasImport(pkg pgs.Package, imported pgs.Package) (*importData, boo
 
 func (t *tts) addDeclarationForImport(imp *importData, decl string) {
 	for _, declared := range imp.Declarations {
-		if declared == decl {
+		if declared == (Declaration{false, decl}) {
 			return
 		}
 	}
-	imp.Declarations = append(imp.Declarations, decl)
+	imp.Declarations = append(imp.Declarations, Declaration{false, decl})
+}
+
+func (t *tts) addTypeDeclarationForImport(imp *importData, decl string) {
+	for _, declared := range imp.Declarations {
+		if declared == (Declaration{true, decl}) {
+			return
+		}
+	}
+	imp.Declarations = append(imp.Declarations, Declaration{true, decl})
 }

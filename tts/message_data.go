@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	pgs "github.com/lyft/protoc-gen-star"
+	"google.golang.org/protobuf/types/pluginpb"
 )
 
 type messageData struct {
@@ -23,14 +24,20 @@ type messageField struct {
 	IsMessage  bool
 }
 
+var _ = pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL
+
 func createField(field pgs.Field) *messageField {
 	var f messageField
 	f.Name = field.Name().LowerCamelCase().String()
 	f.JSONName = field.Name().String()
-	f.Type = protoTypeToTSType(field.Type())
+	if isTime(field.Type().Embed()) {
+		f.Type = "string"
+	} else {
+		f.Type = protoTypeToTSType(field.Type())
+		f.IsMessage = field.Type().ProtoType() == pgs.MessageT
+	}
 	f.IsRepeated = field.Type().IsRepeated()
 	f.IsEnum = field.Type().ProtoType() == pgs.EnumT
-	f.IsMessage = field.Type().ProtoType() == pgs.MessageT
 	f.ZeroValue = f.populateZeroValue()
 	return &f
 }
@@ -125,6 +132,17 @@ func (mf messageField) PrintTypeProperties() string {
 	return resp
 }
 
+func (mf messageField) PrintTypeJSON() string {
+	resp := mf.Type
+	if mf.isClass() {
+		resp += "JSON"
+	}
+	if mf.IsRepeated {
+		resp += "[]"
+	}
+	return resp
+}
+
 func (mf messageField) SetConstructorProp(optional bool) string {
 	if mf.isBasic() || mf.IsEnum {
 		return fmt.Sprintf("props.%s!", mf.Name)
@@ -149,6 +167,19 @@ func (mf messageField) SetToObjectProp(optional bool) string {
 		return fmt.Sprintf("this.%s?.toObject()", mf.Name)
 	}
 	return fmt.Sprintf("this.%s.toObject()", mf.Name)
+}
+
+func (mf messageField) SetToJSONProp(optional bool) string {
+	if mf.isBasic() || mf.IsEnum {
+		return fmt.Sprintf("this.%s", mf.Name)
+	}
+	if mf.IsRepeated {
+		return fmt.Sprintf("(this.%s || []).map((v) => { return v.toJSON() })", mf.Name)
+	}
+	if optional {
+		return fmt.Sprintf("this.%s?.toJSON()", mf.Name)
+	}
+	return fmt.Sprintf("this.%s.toJSON()", mf.Name)
 }
 
 func (mf messageField) isBasic() bool {
